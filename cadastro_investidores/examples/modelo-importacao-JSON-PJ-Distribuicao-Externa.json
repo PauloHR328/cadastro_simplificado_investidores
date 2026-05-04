@@ -1,0 +1,198 @@
+{
+  "TipoImportacao": 3,
+  "Dados": [
+    {
+      "RazaoSocial": "string",
+      "NomeFantasia": "string",
+      "CNPJInvestidor": "string",
+      "CNPJDistribuidor": "string",
+      "AtividadeEconomicaPrincipal": 0,
+      "CNAE": "string",
+      "CodigoPais": 0,
+      "CodigoClassificacaoTributaria": 0,
+      "CodigoClassificacaoCvm": 0,
+      "CodigoClassificacaoANBIMA": 0,
+      "CodigoPaisDomicilioFiscal": 0,
+      "TipoNIF": 0,
+      "NIF": "string",
+      "OutroCodigoPaisDomicilioFiscal": 0,
+      "OutroNIF": "string",
+      "OutroTipoNIF": 0,
+      "USPerson": false,
+      "EnderecoSedeSocial": {
+        "Rua": "string",
+        "Numero": 0,
+        "Complemento": "string",
+        "Bairro": "string",
+        "CEP": "string",
+        "Cidade": "string",
+        "Uf": "string",
+        "CodigoPais": 0
+      },
+      "Administrador": {
+        "Nome": "string",
+        "CNPJ": "string"
+      },
+      "ContaBancaria": [
+        {
+          "CodigoBanco": 0,
+          "NumeroAgencia": "string",
+          "NumeroConta": "string",
+          "DigitoConta": "string"
+        }
+      ],
+      "SituacaoPatrimonial": 0,
+      "FaturamentoMedio": 0,
+      "ReferenciasComerciais": [
+        {
+          "Nome": "string",
+          "DDI": 0,
+          "DDD": 0,
+          "NumeroTelefone": 0
+        }
+      ],
+      "DeclaracaoCliente": {
+        "AtividadeFinanceira": false,
+        "PFFI": false,
+        "GIIN": 0,
+        "InstituicaoFinanceiraAdereFATCA": false,
+        "DCFFIRegistrada": false,
+        "DCFFICertificada": false,
+        "DCFFITipoEntidade": "string",
+        "InstituicaoFinanceiraNaoParticipante": false,
+        "BeneficiariaEfetivaIsenta": false,
+        "BeneficiariaEfetivaIsentaTipoEntidade": "string",
+        "NFFE": false,
+        "NFFETipoEntidade": "string",
+        "PessoaFisicaEUAComParticipacaoSubstancial": false,
+        "MaisDe50PorcentoReceitaAtivosEstritamenteAtividades": false
+      },
+      "SociosPessoaJuridica": [
+        {
+          "RazaoSocial": "string",
+          "CodigoPaisSede": 0,
+          "CNPJ": "string",
+          "CNPJEmpresaSocio": "string",
+          "CodigoPaisDomicilioFiscal": 0,
+          "TipoNIF": 0,
+          "NIF": "string",
+          "CodigoOutroPaisDomicilioFiscal": 0,
+          "OutroTipoNIF": 0,
+          "OutroNIF": "string",
+          "OutroCodigoPaisDomicilioFiscal": 0,
+          "ParticipacaoSociedade": 0,
+          "DDI": 0,
+          "DDD": 0,
+          "Telefone": 0,
+          "Email": "string",
+          "Endereco": {
+            "Rua": "string",
+            "Numero": 0,
+            "Complemento": "string",
+            "Bairro": "string",
+            "CEP": "string",
+            "Cidade": "string",
+            "Uf": "string",
+            "CodigoPais": 0
+          }
+        }
+      ],
+      "SociosPessoaFisica": [
+        {
+          "NomeCompleto": "string",
+          "CPF": "string",
+          "CNPJEmpresaSocio": "string",
+          "DataNascimento": "2024-12-10",
+          "Naturalidade": "string",
+          "CodigoPaisNacionalidade": 0,
+          "CodigoTipoDocumento": 0,
+          "NumeroDocumento": "string",
+          "PossuiCidadania": false,
+          "CodigoPaisCidadania": 0,
+          "OutroCodigoPaisCidadania": 0,
+          "CodigoPaisDomicilioFiscal": 0,
+          "TipoNIF": 0,
+          "NIF": 0,
+          "OutroCodigoPaisDomicilioFiscal": 0,
+          "OutroTipoNIF": 0,
+          "OutroNIF": "string",
+          "DDI": 0,
+          "DDD": 0,
+          "Telefone": 0,
+          "Email": "string",
+          "Endereco": {
+            "Rua": "string",
+            "Numero": 0,
+            "Complemento": "string",
+            "Bairro": "string",
+            "CEP": "string",
+            "Cidade": "string",
+            "Uf": "string",
+            "CodigoPais": 0
+          }
+        }
+      ],
+      "Representante": {
+        "FormaRepresentacao": 0,
+        "TipoRepresentante": 0,
+        "Nome": "string",
+        "CPF": 0,
+        "DataNascimento": "2024-12-31",
+        "CodigoPaisNacionalidade": 0,
+        "Naturalidade": "string",
+        "CodigoTipoDocumento": 0,
+        "NumeroDocumento": "string",
+        "CodigoPaisDomicilioFiscal": 0,
+        "TipoNIF": 0,
+        "NIF": "string",
+        "OutroCodigoPaisDomicilioFiscal": 0,
+        "OutroTipoNIF": 0,
+        "OutroNIF": "string",
+        "DDI": 0,
+        "DDD": 0,
+        "Celular": 0,
+        "Email": "string",
+        "Endereco": {
+          "Rua": "string",
+          "Numero": 0,
+          "Complemento": "string",
+          "Bairro": "string",
+          "CEP": "string",
+          "Cidade": "string",
+          "Uf": "string",
+          "CodigoPais": 0
+        }
+      },
+      "INR": {
+        "TipoRepresentante": 0,
+        "Nome": "string",
+        "CPF": 0,
+        "DataNascimento": "2024-12-31",
+        "CodigoPaisNacionalidade": 0,
+        "Naturalidade": "string",
+        "CodigoTipoDocumento": 0,
+        "NumeroDocumento": "string",
+        "CodigoPaisDomicilioFiscal": 0,
+        "TipoNIF": 0,
+        "NIF": "string",
+        "OutroCodigoPaisDomicilioFiscal": 0,
+        "OutroTipoNIF": 0,
+        "OutroNIF": "string",
+        "DDI": 0,
+        "DDD": 0,
+        "Celular": 0,
+        "Email": "string",
+        "Endereco": {
+          "Rua": "string",
+          "Numero": 0,
+          "Complemento": "string",
+          "Bairro": "string",
+          "CEP": "string",
+          "Cidade": "string",
+          "Uf": "string",
+          "CodigoPais": 0
+        }
+      }
+    }
+  ]
+}

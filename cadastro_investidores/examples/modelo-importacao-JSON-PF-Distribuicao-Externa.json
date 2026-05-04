@@ -1,0 +1,167 @@
+{
+  "TipoImportacao": 1,
+  "Dados": [
+    {
+      "NomeCompleto": "string",
+      "CPFInvestidor": "string",
+      "DataNascimento": "2024-12-31",
+      "CNPJDistribuidor": "string",
+      "CodigoClassificacaoTributaria": 0,
+      "CodigoClassificacaoCvm": 0,
+      "CodigoClassificacaoANBIMA": 0,
+      "Naturalidade": "string",
+      "CodigoPaisNacionalidade": 0,
+      "CodigoPaisDomicilioFiscal": 0,
+      "NIF": "string",
+      "TipoNIF": 2,
+      "OutroCodigoPaisDomicilioFiscal": 0,
+      "OutroNIF": "string",
+      "OutroTipoNIF": 2,
+      "DDI": 0,
+      "DDD": 0,
+      "Telefone": 0,
+      "Email": "string",
+      "USPerson": false,
+      "ProfissaoOcupacao": 0,
+      "Endereco": {
+        "Rua": "string",
+        "Numero": 0,
+        "Complemento": "string",
+        "Bairro": "string",
+        "CEP": "string",
+        "Cidade": "string",
+        "Uf": "string",
+        "CodigoPais": 0
+      },
+      "EnderecoCorrespondencia": {
+        "TipoEndereco": 3,
+        "Endereco": {
+          "Rua": "string",
+          "Numero": 0,
+          "Complemento": "string",
+          "Bairro": "string",
+          "CEP": "string",
+          "Cidade": "string",
+          "Uf": "string",
+          "CodigoPais": 0
+        }
+      },
+      "DadosFinanceiros": {
+        "CodigoTipoOpcaoRecurso": 3,
+        "DadosRenda": {
+          "RendaMensal": false,
+          "PartilhaBens": false,
+          "Heranca": false,
+          "Aposentadoria": false,
+          "AluguelPropriedades": false,
+          "Doacao": false,
+          "OutrosEspecifique": "string"
+        },
+        "RendaMensal": 0.0,
+        "PatrimonioTotal": 0.0,
+        "OutrosRendimentosAnual": 0.0,
+        "OrigemOutrosRendimentosAnual": "string"
+      },
+      "ContaBancaria": [
+        {
+          "CodigoBanco": 0,
+          "NumeroAgencia": "string",
+          "NumeroConta": "string",
+          "DigitoConta": "string"
+        }
+      ],
+      "Representante": {
+        "TipoRepresentante": 0,
+        "Nome": "string",
+        "CPF": 0,
+        "DataNascimento": "2024-12-31",
+        "CodigoPaisNacionalidade": 0,
+        "Naturalidade": "string",
+        "CodigoTipoDocumento": 1,
+        "NumeroDocumento": "string",
+        "DDI": 0,
+        "DDD": 0,
+        "Celular": 0,
+        "Email": "string",
+        "CodigoPaisDomicilioFiscal": 0,
+        "NIF": "string",
+        "TipoNIF": 2,
+        "OutroCodigoPaisDomicilioFiscal": 0,
+        "OutroNIF": "string",
+        "OutroTipoNIF": 2,
+        "Endereco": {
+          "Rua": "string",
+          "Numero": 0,
+          "Complemento": "string",
+          "Bairro": "string",
+          "CEP": "string",
+          "Cidade": "string",
+          "Uf": "string",
+          "CodigoPais": 0
+        }
+      },
+      "Cotitular": {
+        "Representante": {
+          "TipoRepresentante": 0,
+          "FormaRepresentacao": 0,
+          "Nome": "string",
+          "CPF": 0,
+          "DDI": 0,
+          "DDD": 0,
+          "Celular": 0,
+          "Email": "string",
+          "DataNascimento": "2024-12-31",
+          "CodigoPaisNacionalidade": 0,
+          "Naturalidade": "string",
+          "CodigoTipoDocumento": 0,
+          "NumeroDocumento": "string",
+          "Endereco": {
+            "IdEndereco": 0,
+            "Rua": "string",
+            "Numero": 10,
+            "Complemento": "string",
+            "Bairro": "string",
+            "CEP": "string",
+            "Cidade": "string",
+            "Uf": "string",
+            "CodigoPais": 0
+          },
+          "CodigoPaisDomicilioFiscal": 0,
+          "NIF": "string",
+          "TipoNIF": 0,
+          "OutroCodigoPaisDomicilioFiscal": 0,
+          "OutroNIF": "string",
+          "OutroTipoNIF": 0
+        },
+        "NomeCompleto": "string",
+        "CPFInvestidor": "string",
+        "DataNascimento": "2024-12-31",
+        "Naturalidade": "string",
+        "CodigoPaisNacionalidade": 0,
+        "CodigoPaisDomicilioFiscal": 0,
+        "NIF": "string",
+        "TipoNIF": 0,
+        "OutroCodigoPaisDomicilioFiscal": 0,
+        "OutroNIF": "string",
+        "OutroTipoNIF": 0,
+        "DDI": 0,
+        "DDD": 0,
+        "Telefone": 0,
+        "Email": "string",
+        "Endereco": {
+          "IdEndereco": 0,
+          "Rua": "string",
+          "Numero": 0,
+          "Complemento": "string",
+          "Bairro": "string",
+          "CEP": "string",
+          "Cidade": "string",
+          "Uf": "string",
+          "CodigoPais": 0
+        },
+        "ProfissaoOcupacao": 0,
+        "USPerson": false
+      }
+    }
+  ]
+}

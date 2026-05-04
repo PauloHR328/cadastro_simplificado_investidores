@@ -1,0 +1,101 @@
+{
+  "TipoImportacao": 2,
+  "Dados": [
+    {
+      "NomeFundo": "string",
+      "CNPJFundo": "string",
+      "DataConstituicao": "2024-12-31",
+      "CNPJDistribuidor": "string",
+      "CodigoClassificacaoTributaria": 0,
+      "CodigoClassificacaoCvm": 0,
+      "CodigoClassificacaoANBIMA": 0,
+      "EnderecoCorrespondencia": 0,
+      "InformeReceitaFederal": false,
+      "CETIP": 0,
+      "ContaBancaria": {
+        "CodigoBanco": 0,
+        "NumeroAgencia": "string",
+        "NumeroConta": "string",
+        "DigitoConta": "string"
+      },
+      "CodigoTipoRepresentante": 0,
+      "Administrador": {
+        "Nome": "string",
+        "CpfCnpj": "string",
+        "DDI": 0,
+        "DDD": 0,
+        "Celular": 0,
+        "Email": "string",
+        "Endereco": {
+          "Rua": "0",
+          "Numero": 0,
+          "Complemento": "string",
+          "Bairro": "string",
+          "CEP": "string",
+          "Cidade": "string",
+          "Uf": "string",
+          "CodigoPais": 0
+        }
+      },
+      "Gestores": [
+        {
+          "Nome": "string",
+          "CpfCnpj": "string",
+          "DDI": 0,
+          "DDD": 0,
+          "Celular": 0,
+          "Email": "string",
+          "Endereco": {
+            "Rua": "string",
+            "Numero": 0,
+            "Complemento": "string",
+            "Bairro": "string",
+            "CEP": "string",
+            "Cidade": "string",
+            "Uf": "string",
+            "CodigoPais": 0
+          }
+        }
+      ],
+      "Representantes": [
+        {
+          "TipoRepresentante": 0,
+          "Nome": "string",
+          "CPF": 0,
+          "DDI": 0,
+          "DDD": 0,
+          "Celular": 0,
+          "Email": "string",
+          "DataNascimento": "2024-12-31",
+          "CodigoPaisNacionalidade": 0,
+          "Naturalidade": "string",
+          "CodigoTipoDocumento": 0,
+          "NumeroDocumento": "string",
+          "CodigoPaisDomicilioFiscal": 0,
+          "Endereco": {
+            "Rua": "string",
+            "Numero": 0,
+            "Complemento": "string",
+            "Bairro": "string",
+            "CEP": "string",
+            "Cidade": "string",
+            "Uf": "string",
+            "CodigoPais": 0
+          }
+        }
+      ],
+      "BeneficiariosFinais": [
+        {
+          "RazaoSocial": "string",
+          "CpfCnpj": "string",
+          "Participacao": 0,
+          "Cep": "string",
+          "NumeroEndereco": 0,
+          "RendaMensal": 0,
+          "PatrimonioTotal": 0,
+          "CodigoPais": 31
+        }
+      ]
+    }
+  ]
+}
