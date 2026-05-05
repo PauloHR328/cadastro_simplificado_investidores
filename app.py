@@ -18,7 +18,7 @@ from utils import (
 from word_template_utils import (
     build_download_zip_name,
     detect_template_kind,
-    extract_template_fields,
+    extract_template_field_details,
     format_variable_label,
     generate_documents_zip,
     is_date_variable,
@@ -40,6 +40,7 @@ def initialize_session_state() -> None:
         "word_template_name": None,
         "word_variables": [],
         "word_variable_types": {},
+        "word_ignored_variables": [],
         "word_records": [],
         "word_generated_zip": None,
         "word_generated_files": [],
@@ -354,11 +355,25 @@ def render_word_documents_tab() -> None:
         st.session_state.word_records = []
         st.session_state.word_variables = []
         st.session_state.word_variable_types = {}
+        st.session_state.word_ignored_variables = []
         reset_word_generation_state()
 
     try:
         template_kind = detect_template_kind(template_name)
-        variables = extract_template_fields(template_bytes, template_name)
+        field_details = extract_template_field_details(template_bytes, template_name)
+    except ModuleNotFoundError as exc:
+        if exc.name == "pypdf":
+            st.error(
+                "Suporte a PDF editável não está disponível neste ambiente porque a dependência "
+                "`pypdf` não está instalada. Instale com `pip install -r requirements.txt` "
+                "no mesmo ambiente usado para rodar o Streamlit."
+            )
+            return
+        st.error(
+            "Não foi possível processar o template enviado. "
+            f"Detalhes: {exc}"
+        )
+        return
     except Exception as exc:
         st.error(
             "Não foi possível processar o template enviado. "
@@ -366,7 +381,7 @@ def render_word_documents_tab() -> None:
         )
         return
 
-    if not variables:
+    if not field_details:
         if template_kind == "word":
             st.warning(
                 "Nenhuma variável foi encontrada no template. Use placeholders no formato `{{ variavel }}`."
@@ -377,7 +392,20 @@ def render_word_documents_tab() -> None:
             )
         return
 
+    all_variables = [field_detail["name"] for field_detail in field_details]
+    ignored_variables = [
+        field_detail["name"]
+        for field_detail in field_details
+        if template_kind == "pdf" and field_detail["field_type"] == "checkbox"
+    ]
+    variables = [
+        field_detail["name"]
+        for field_detail in field_details
+        if field_detail["name"] not in ignored_variables
+    ]
+
     st.session_state.word_variables = variables
+    st.session_state.word_ignored_variables = ignored_variables
 
     for variable in variables:
         st.session_state.word_variable_types.setdefault(
@@ -385,7 +413,7 @@ def render_word_documents_tab() -> None:
             "data" if is_date_variable(variable) else "texto",
         )
 
-    stale_variables = set(st.session_state.word_variable_types) - set(variables)
+    stale_variables = set(st.session_state.word_variable_types) - set(all_variables)
     for stale_variable in stale_variables:
         del st.session_state.word_variable_types[stale_variable]
 
@@ -393,7 +421,7 @@ def render_word_documents_tab() -> None:
     with col1:
         st.metric("Template carregado", Path(template_name).name)
     with col2:
-        st.metric("Campos detectados", len(variables))
+        st.metric("Campos detectados", len(all_variables))
     with col3:
         st.metric("Registros adicionados", len(st.session_state.word_records))
 
@@ -402,7 +430,9 @@ def render_word_documents_tab() -> None:
         st.caption("Você pode ajustar o tipo de cada variável antes de preencher os registros.")
     else:
         st.caption("Os campos foram lidos do formulário do PDF. Você pode ajustar o tipo para facilitar o preenchimento.")
-    for variable in variables:
+    for field_detail in field_details:
+        variable = field_detail["name"]
+        is_ignored_checkbox = variable in ignored_variables
         col_label, col_type = st.columns([2, 1])
         with col_label:
             st.text_input(
@@ -412,15 +442,37 @@ def render_word_documents_tab() -> None:
                 key=f"word_variable_label_{variable}",
             )
         with col_type:
-            selected_type = st.selectbox(
-                "Tipo",
-                options=["texto", "data"],
-                index=0 if st.session_state.word_variable_types[variable] == "texto" else 1,
-                key=f"word_variable_type_{variable}",
-            )
-            st.session_state.word_variable_types[variable] = selected_type
+            if is_ignored_checkbox:
+                st.text_input(
+                    "Tipo",
+                    value="checkbox (preencher depois)",
+                    disabled=True,
+                    key=f"word_variable_type_readonly_{variable}",
+                )
+            else:
+                selected_type = st.selectbox(
+                    "Tipo",
+                    options=["texto", "data"],
+                    index=0 if st.session_state.word_variable_types[variable] == "texto" else 1,
+                    key=f"word_variable_type_{variable}",
+                )
+                st.session_state.word_variable_types[variable] = selected_type
+
+    if ignored_variables:
+        ignored_labels = ", ".join(f"`{variable}`" for variable in ignored_variables)
+        st.info(
+            "Os seguintes campos de checkbox do PDF foram identificados e ficarão fora "
+            f"do preenchimento automático para você completar depois: {ignored_labels}."
+        )
 
     st.markdown("### Adicionar registro")
+    if not variables:
+        st.info(
+            "Os campos detectados neste template são apenas checkboxes ou tipos não suportados "
+            "para preenchimento em lote nesta tela."
+        )
+        return
+
     with st.form("word_record_form", clear_on_submit=True):
         new_record = {}
         for variable in variables:
@@ -487,6 +539,15 @@ def render_word_documents_tab() -> None:
             st.success(
                 f"{len(generated_files)} documento(s) gerado(s) com sucesso."
             )
+        except ModuleNotFoundError as exc:
+            if exc.name == "pypdf":
+                st.error(
+                    "Suporte a PDF editável não está disponível neste ambiente porque a dependência "
+                    "`pypdf` não está instalada. Instale com `pip install -r requirements.txt` "
+                    "no mesmo ambiente usado para rodar o Streamlit."
+                )
+            else:
+                st.error(f"Erro ao gerar os documentos: {exc}")
         except Exception as exc:
             st.error(f"Erro ao gerar os documentos: {exc}")
 

@@ -110,6 +110,39 @@ def extract_pdf_form_fields(template_bytes: bytes) -> list[str]:
     return [field_name.strip() for field_name in fields.keys() if field_name and field_name.strip()]
 
 
+def extract_pdf_form_field_details(template_bytes: bytes) -> list[dict[str, str]]:
+    """Extrai nome e tipo básico dos campos de um PDF editável."""
+    from pypdf import PdfReader
+
+    reader = PdfReader(BytesIO(template_bytes))
+    fields = reader.get_fields()
+    if not fields:
+        return []
+
+    field_details: list[dict[str, str]] = []
+    for field_name, field in fields.items():
+        cleaned_name = field_name.strip() if field_name else ""
+        if not cleaned_name:
+            continue
+
+        field_type = str(getattr(field, "field_type", "") or field.get("/FT", ""))
+        if field_type == "/Btn":
+            normalized_type = "checkbox"
+        elif field_type == "/Ch":
+            normalized_type = "opcao"
+        else:
+            normalized_type = "texto"
+
+        field_details.append(
+            {
+                "name": cleaned_name,
+                "field_type": normalized_type,
+            }
+        )
+
+    return field_details
+
+
 def extract_template_fields(template_bytes: bytes, template_name: str) -> list[str]:
     """Extrai os campos do template de acordo com o tipo do arquivo."""
     template_kind = detect_template_kind(template_name)
@@ -117,6 +150,25 @@ def extract_template_fields(template_bytes: bytes, template_name: str) -> list[s
         return extract_template_variables(template_bytes)
     if template_kind == "pdf":
         return extract_pdf_form_fields(template_bytes)
+    raise ValueError(f"Tipo de template não suportado: {template_kind}")
+
+
+def extract_template_field_details(
+    template_bytes: bytes,
+    template_name: str,
+) -> list[dict[str, str]]:
+    """Extrai detalhes dos campos para apoiar a interface de preenchimento."""
+    template_kind = detect_template_kind(template_name)
+    if template_kind == "word":
+        return [
+            {
+                "name": variable,
+                "field_type": "data" if is_date_variable(variable) else "texto",
+            }
+            for variable in extract_template_variables(template_bytes)
+        ]
+    if template_kind == "pdf":
+        return extract_pdf_form_field_details(template_bytes)
     raise ValueError(f"Tipo de template não suportado: {template_kind}")
 
 
