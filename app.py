@@ -17,11 +17,11 @@ from utils import (
 )
 from word_template_utils import (
     build_download_zip_name,
+    extract_template_variables,
     format_variable_label,
     generate_documents_zip,
     is_date_variable,
     normalize_record,
-    prepare_template_bytes,
     required_fill_value,
     summarize_record,
 )
@@ -171,7 +171,7 @@ def render_investor_registration_tab() -> None:
 
         col1, col2 = st.columns([1, 1])
         with col1:
-            if st.button("Gerar JSON", width="stretch", type="primary"):
+            if st.button("Gerar JSON", use_container_width=True, type="primary"):
                 try:
                     is_valid, errors = validate_required_fields(schema, form_data)
 
@@ -196,7 +196,7 @@ def render_investor_registration_tab() -> None:
                     )
 
         with col2:
-            if st.button("Copiar para Clipboard", width="stretch"):
+            if st.button("Copiar para Clipboard", use_container_width=True):
                 if st.session_state.json_gerado:
                     st.info("JSON copiado! Copie do campo abaixo manualmente se necessário.")
 
@@ -237,7 +237,7 @@ def render_investor_registration_tab() -> None:
             data=json_formatted,
             file_name=filename,
             mime="application/json",
-            width="stretch",
+            use_container_width=True,
             type="primary",
         )
 
@@ -246,14 +246,14 @@ def render_investor_registration_tab() -> None:
 
         col1, col2 = st.columns(2)
         with col1:
-            if st.button("Copiar JSON sem Formatação", width="stretch"):
+            if st.button("Copiar JSON sem Formatação", use_container_width=True):
                 json_minified = json.dumps(
                     st.session_state.json_gerado, ensure_ascii=False
                 )
                 st.code(json_minified, language="json")
 
         with col2:
-            if st.button("Validar Schema", width="stretch"):
+            if st.button("Validar Schema", use_container_width=True):
                 st.markdown(
                     "<div class='info-box'><strong>JSON validado!</strong><br>O JSON está em conformidade com o modelo esperado.</div>",
                     unsafe_allow_html=True,
@@ -350,7 +350,7 @@ def render_word_documents_tab() -> None:
         reset_word_generation_state()
 
     try:
-        _, variables, _ = prepare_template_bytes(template_bytes)
+        variables = extract_template_variables(template_bytes)
     except Exception as exc:
         st.error(
             "Não foi possível processar o template enviado. "
@@ -383,7 +383,7 @@ def render_word_documents_tab() -> None:
             }
             for variable in variables
         ],
-        width="stretch",
+        use_container_width=True,
     )
 
     st.info(
@@ -409,7 +409,7 @@ def render_word_documents_tab() -> None:
         add_record = st.form_submit_button(
             "Adicionar registro",
             type="primary",
-            width="stretch",
+            use_container_width=True,
         )
 
     if add_record:
@@ -423,7 +423,7 @@ def render_word_documents_tab() -> None:
     if not st.session_state.word_records:
         st.info("Nenhum registro foi adicionado ainda.")
     else:
-        st.dataframe(st.session_state.word_records, width="stretch")
+        st.dataframe(st.session_state.word_records, use_container_width=True)
 
         for index, record in enumerate(st.session_state.word_records, start=1):
             with st.expander(f"Registro {index}: {summarize_record(record)}"):
@@ -431,7 +431,7 @@ def render_word_documents_tab() -> None:
                 if st.button(
                     "Remover registro",
                     key=f"remove_word_record_{index}",
-                    width="stretch",
+                    use_container_width=True,
                 ):
                     st.session_state.word_records.pop(index - 1)
                     reset_word_generation_state()
@@ -442,7 +442,7 @@ def render_word_documents_tab() -> None:
         st.info("Adicione ao menos um registro para habilitar a geração dos documentos.")
         return
 
-    if st.button("Gerar documentos", type="primary", width="stretch"):
+    if st.button("Gerar documentos", type="primary", use_container_width=True):
         try:
             zip_bytes, generated_files = generate_documents_zip(
                 template_bytes=template_bytes,
@@ -465,7 +465,7 @@ def render_word_documents_tab() -> None:
             data=st.session_state.word_generated_zip,
             file_name=download_name,
             mime="application/zip",
-            width="stretch",
+            use_container_width=True,
         )
 
         st.markdown("**Arquivos prontos para download:**")

@@ -44,22 +44,6 @@ def format_variable_label(variable_name: str) -> str:
     return label[:1].upper() + label[1:] if label else "Campo"
 
 
-def build_safe_variable_name(variable_name: str) -> str:
-    """Converte nomes livres em identificadores seguros para o motor do template."""
-    normalized = unicodedata.normalize("NFKD", variable_name.strip())
-    ascii_value = normalized.encode("ascii", "ignore").decode("ascii").lower()
-    safe_name = re.sub(r"[^a-z0-9_]+", "_", ascii_value)
-    safe_name = re.sub(r"_+", "_", safe_name).strip("_")
-
-    if not safe_name:
-        safe_name = "campo"
-
-    if safe_name[0].isdigit():
-        safe_name = f"campo_{safe_name}"
-
-    return safe_name
-
-
 def _iter_table_paragraphs(table: Any) -> Iterable[str]:
     """Percorre parágrafos dentro das tabelas do documento."""
     for row in table.rows:
@@ -109,50 +93,6 @@ def extract_template_variables(template_bytes: bytes) -> list[str]:
                 found_variables.append(variable)
 
     return found_variables
-
-
-def prepare_template_bytes(template_bytes: bytes) -> tuple[bytes, list[str], dict[str, str]]:
-    """Normaliza placeholders para nomes compatíveis com Jinja mantendo os rótulos originais."""
-    found_variables: list[str] = []
-    seen_variables: set[str] = set()
-    safe_name_usage: dict[str, int] = {}
-    variable_mapping: dict[str, str] = {}
-
-    def _replace_match(match: re.Match[str]) -> str:
-        original_name = match.group(1).strip()
-        if not original_name:
-            return match.group(0)
-
-        if original_name not in seen_variables:
-            seen_variables.add(original_name)
-            found_variables.append(original_name)
-
-        if original_name not in variable_mapping:
-            safe_base = build_safe_variable_name(original_name)
-            usage_count = safe_name_usage.get(safe_base, 0)
-            safe_name_usage[safe_base] = usage_count + 1
-            variable_mapping[original_name] = (
-                safe_base if usage_count == 0 else f"{safe_base}_{usage_count + 1}"
-            )
-
-        return "{{ " + variable_mapping[original_name] + " }}"
-
-    input_zip = ZipFile(BytesIO(template_bytes))
-    output_buffer = BytesIO()
-
-    with input_zip, ZipFile(output_buffer, mode="w", compression=ZIP_DEFLATED) as output_zip:
-        for file_info in input_zip.infolist():
-            file_bytes = input_zip.read(file_info.filename)
-
-            if file_info.filename.endswith(".xml"):
-                xml_content = file_bytes.decode("utf-8")
-                xml_content = PLACEHOLDER_PATTERN.sub(_replace_match, xml_content)
-                output_zip.writestr(file_info, xml_content.encode("utf-8"))
-            else:
-                output_zip.writestr(file_info, file_bytes)
-
-    output_buffer.seek(0)
-    return output_buffer.getvalue(), found_variables, variable_mapping
 
 
 def _format_value(value: Any) -> str:
@@ -265,7 +205,6 @@ def generate_documents_zip(
     records: list[dict[str, Any]],
 ) -> tuple[bytes, list[str]]:
     """Gera todos os documentos preenchidos e os compacta em um único zip."""
-    prepared_template_bytes, _, variable_mapping = prepare_template_bytes(template_bytes)
     zip_buffer = BytesIO()
     generated_files: list[str] = []
     filename_usage: dict[str, int] = {}
@@ -273,12 +212,7 @@ def generate_documents_zip(
     with ZipFile(zip_buffer, mode="w", compression=ZIP_DEFLATED) as zip_file:
         for index, record in enumerate(records, start=1):
             normalized_record = normalize_record(record, variables)
-            safe_context = {
-                variable_mapping[variable]: value
-                for variable, value in normalized_record.items()
-                if variable in variable_mapping
-            }
-            document_bytes = render_document(prepared_template_bytes, safe_context)
+            document_bytes = render_document(template_bytes, normalized_record)
             base_filename = build_document_filename(
                 template_name=template_name,
                 record=normalized_record,
