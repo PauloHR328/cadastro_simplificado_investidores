@@ -17,11 +17,11 @@ from utils import (
 )
 from word_template_utils import (
     build_download_zip_name,
-    extract_template_variables,
     format_variable_label,
     generate_documents_zip,
     is_date_variable,
     normalize_record,
+    prepare_template_bytes,
     required_fill_value,
     summarize_record,
 )
@@ -350,7 +350,7 @@ def render_word_documents_tab() -> None:
         reset_word_generation_state()
 
     try:
-        variables = extract_template_variables(template_bytes)
+        _, variables, _ = prepare_template_bytes(template_bytes)
     except Exception as exc:
         st.error(
             "Não foi possível processar o template enviado. "
