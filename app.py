@@ -3,7 +3,7 @@ Aplicação Streamlit para cadastro de investidores e geração de documentos Wo
 """
 
 import json
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 
 import streamlit as st
@@ -22,7 +22,6 @@ from word_template_utils import (
     generate_documents_zip,
     is_date_variable,
     normalize_record,
-    required_fill_value,
     summarize_record,
 )
 
@@ -39,6 +38,7 @@ def initialize_session_state() -> None:
         "word_template_signature": None,
         "word_template_name": None,
         "word_variables": [],
+        "word_variable_types": {},
         "word_records": [],
         "word_generated_zip": None,
         "word_generated_files": [],
@@ -347,6 +347,7 @@ def render_word_documents_tab() -> None:
         st.session_state.word_template_name = template_name
         st.session_state.word_records = []
         st.session_state.word_variables = []
+        st.session_state.word_variable_types = {}
         reset_word_generation_state()
 
     try:
@@ -366,6 +367,16 @@ def render_word_documents_tab() -> None:
 
     st.session_state.word_variables = variables
 
+    for variable in variables:
+        st.session_state.word_variable_types.setdefault(
+            variable,
+            "data" if is_date_variable(variable) else "texto",
+        )
+
+    stale_variables = set(st.session_state.word_variable_types) - set(variables)
+    for stale_variable in stale_variables:
+        del st.session_state.word_variable_types[stale_variable]
+
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Template carregado", Path(template_name).name)
@@ -375,20 +386,24 @@ def render_word_documents_tab() -> None:
         st.metric("Registros adicionados", len(st.session_state.word_records))
 
     st.markdown("### Variáveis detectadas")
-    st.dataframe(
-        [
-            {
-                "Variável": variable,
-                "Tipo de campo": "data" if is_date_variable(variable) else "texto",
-            }
-            for variable in variables
-        ],
-        use_container_width=True,
-    )
-
-    st.info(
-        f"Campos sem preenchimento serão enviados como `{required_fill_value()}`."
-    )
+    st.caption("Você pode ajustar o tipo de cada variável antes de preencher os registros.")
+    for variable in variables:
+        col_label, col_type = st.columns([2, 1])
+        with col_label:
+            st.text_input(
+                "Variável detectada",
+                value=variable,
+                disabled=True,
+                key=f"word_variable_label_{variable}",
+            )
+        with col_type:
+            selected_type = st.selectbox(
+                "Tipo",
+                options=["texto", "data"],
+                index=0 if st.session_state.word_variable_types[variable] == "texto" else 1,
+                key=f"word_variable_type_{variable}",
+            )
+            st.session_state.word_variable_types[variable] = selected_type
 
     st.markdown("### Adicionar registro")
     with st.form("word_record_form", clear_on_submit=True):
@@ -397,10 +412,12 @@ def render_word_documents_tab() -> None:
             label = format_variable_label(variable)
             field_key = f"word_input_{variable}"
 
-            if is_date_variable(variable):
+            if st.session_state.word_variable_types.get(variable) == "data":
                 new_record[variable] = st.date_input(
                     label,
                     value=None,
+                    min_value=date(1900, 1, 1),
+                    max_value=date(2100, 12, 31),
                     key=field_key,
                 )
             else:

@@ -16,7 +16,6 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 
 PLACEHOLDER_PATTERN = re.compile(r"{{\s*([^{}]+?)\s*}}")
-MISSING_VALUE = "PREENCHIMENTO NECESSÁRIO"
 FILENAME_CANDIDATES = (
     "nome",
     "nome_completo",
@@ -25,12 +24,6 @@ FILENAME_CANDIDATES = (
     "cnpj",
     "cpf",
 )
-
-
-def required_fill_value() -> str:
-    """Expõe o valor padrão usado quando um campo não é preenchido."""
-    return MISSING_VALUE
-
 
 def is_date_variable(variable_name: str) -> bool:
     """Define automaticamente o tipo do campo com base no nome da variável."""
@@ -98,7 +91,7 @@ def extract_template_variables(template_bytes: bytes) -> list[str]:
 def _format_value(value: Any) -> str:
     """Normaliza o valor para o contexto que será enviado ao template."""
     if value is None:
-        return MISSING_VALUE
+        return ""
 
     if isinstance(value, datetime):
         return value.strftime("%d/%m/%Y")
@@ -108,7 +101,7 @@ def _format_value(value: Any) -> str:
 
     if isinstance(value, str):
         cleaned_value = value.strip()
-        return cleaned_value if cleaned_value else MISSING_VALUE
+        return cleaned_value
 
     return str(value)
 
@@ -133,7 +126,7 @@ def sanitize_filename(value: str) -> str:
 def summarize_record(record: dict[str, str]) -> str:
     """Gera um resumo curto do registro para exibição na interface."""
     for key, value in record.items():
-        if value and value != MISSING_VALUE:
+        if value:
             return f"{format_variable_label(key)}: {value}"
     return "Sem identificador principal"
 
@@ -146,11 +139,11 @@ def _pick_record_identifier(record: dict[str, str]) -> str | None:
         if candidate in lowered_key_map:
             original_key = lowered_key_map[candidate]
             candidate_value = record.get(original_key)
-            if candidate_value and candidate_value != MISSING_VALUE:
+            if candidate_value:
                 return candidate_value
 
     for value in record.values():
-        if value and value != MISSING_VALUE:
+        if value:
             return value
 
     return None
