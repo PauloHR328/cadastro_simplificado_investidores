@@ -1,6 +1,9 @@
-# 💼 Cadastro de Investidores - MVP
+# 💼 Cadastro de Investidores e Documentos Word
 
-Uma aplicação Streamlit para cadastro dinâmico de investidores (Pessoa Física, Pessoa Jurídica e Fundos) com geração automática de JSON válido.
+Uma aplicação Streamlit com dois fluxos isolados em abas:
+
+- Cadastro dinâmico de investidores (Pessoa Física, Pessoa Jurídica e Fundos) com geração automática de JSON válido
+- Geração em lote de documentos Word a partir de templates `.docx` com variáveis `{{ variavel }}`
 
 ## 🎯 Objetivo
 
@@ -17,6 +20,9 @@ Substituir um fluxo baseado em Excel por uma aplicação executável flexível, 
 ✅ **Download de Arquivo**: Exportar JSON com timestamp  
 ✅ **Escalável**: Fácil adicionar novos campos ou tipos de cadastro  
 ✅ **Sem Hardcoding**: Estrutura baseada em schemas configuráveis  
+✅ **Templates Word Dinâmicos**: Upload de `.docx`, extração automática de variáveis e formulário dinâmico  
+✅ **Lote Manual de Documentos**: Adição e remoção de múltiplos registros sem uso de Excel  
+✅ **Download Consolidado**: Geração de múltiplos `.docx` em um único `.zip`  
 
 ## 📋 Tipos de Cadastro
 
@@ -68,11 +74,41 @@ A aplicação será aberta automaticamente no seu navegador em `http://localhost
 
 ### 3. Usar a Aplicação
 
+#### Aba 1: Cadastro de Investidores
+
 1. **Selecionar Tipo**: No painel esquerdo, escolha o tipo de cadastro
 2. **Preencher Dados**: Clique na aba "Formulário" e preencha os campos
 3. **Gerar JSON**: Vá para "Prévia JSON" e clique em "Gerar JSON"
 4. **Visualizar**: Veja o JSON formatado
 5. **Exportar**: Na aba "Download", baixe o arquivo JSON
+
+#### Aba 2: Documentos Word em Lote
+
+1. **Escolher origem do template**: Selecione um arquivo já salvo em `templates/` ou envie um `.docx`
+2. **Revisar variáveis**: Confira a lista de campos detectados automaticamente
+3. **Adicionar registros**: Preencha o formulário dinâmico e clique em "Adicionar registro"
+4. **Gerar documentos**: Clique em "Gerar documentos" para montar todos os arquivos
+5. **Baixar o lote**: Faça o download do `.zip` com todos os documentos gerados
+
+### 4. Exemplo de uso do fluxo Word
+
+Template:
+
+```text
+Contrato referente a {{ nome }}
+CNPJ: {{ cnpj }}
+Data de assinatura: {{ data_assinatura }}
+```
+
+Registros adicionados manualmente:
+
+1. `nome = Empresa Alpha`, `cnpj = 12.345.678/0001-90`, `data_assinatura = 05/05/2026`
+2. `nome = Empresa Beta`, `cnpj = 98.765.432/0001-10`, `data_assinatura = 06/05/2026`
+
+Resultado:
+
+- `2` documentos `.docx` gerados automaticamente
+- `1` arquivo `.zip` disponível para download
 
 ## 📁 Estrutura do Projeto
 
@@ -82,6 +118,7 @@ cadastro_investidores/
 ├── schemas.py          # Definições dos modelos de dados
 ├── utils.py            # Funções reutilizáveis
 ├── requirements.txt    # Dependências Python
+├── word_template_utils.py  # Utilitários do fluxo de documentos Word
 ├── README.md          # Este arquivo
 ├── examples/          # Modelos JSON de referência
 │   ├── modelo-importacao-JSON-PF-Distribuicao-Externa.json
@@ -114,6 +151,12 @@ cadastro_investidores/
 - `clean_empty_values()`: Remove valores vazios recursivamente
 - `validate_required_fields()`: Valida campos obrigatórios
 
+### `word_template_utils.py`
+- `extract_template_variables()`: Lê o `.docx` e encontra placeholders únicos
+- `normalize_record()`: Garante preenchimento padrão para campos vazios
+- `render_document()`: Preenche um template Word com os dados do registro
+- `generate_documents_zip()`: Gera múltiplos `.docx` e compacta tudo em `.zip`
+
 ## 📊 Regras de Negócio Implementadas
 
 1. ✅ **TipoImportacao Automático**: PF=1, Fundo=2, PJ=3
@@ -134,12 +177,15 @@ cadastro_investidores/
 ## 🎨 Recursos da Interface
 
 - **Sidebar**: Seleção de tipo e botão de limpeza
-- **Abas**: Formulário | Prévia JSON | Download
+- **Abas principais**: Cadastro de Investidores | Documentos Word em Lote
+- **Abas internas do cadastro**: Formulário | Prévia JSON | Download
 - **Expanders**: Seções organizáveis
 - **Buttons Dinâmicos**: Adicionar/remover itens em arrays
 - **Code Editor**: Exibição formatada do JSON
 - **Métricas**: Tipo, TipoImportacao, Registros
 - **Feedback Visual**: Caixas de sucesso/erro
+- **Formulário dinâmico Word**: Inputs gerados a partir das variáveis do template
+- **Lista de registros**: Remoção individual e geração em lote
 
 ## 🔐 Validação
 
@@ -211,6 +257,8 @@ Use o botão "➕ Adicionar Contas Bancárias" para criar múltiplas contas:
 - **streamlit**: ^1.28.0 - Framework web para Python
 - **python-dateutil**: ^2.8.2 - Utilitários de data
 - **pydantic**: ^2.0.0 - Validação de dados
+- **docxtpl**: Preenchimento de templates `.docx`
+- **python-docx**: Leitura de conteúdo e estrutura de documentos Word
 
 ## 🛠️ Desenvolvimento
 

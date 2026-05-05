@@ -100,35 +100,52 @@ def render_simple_fields(fields: Dict, field_prefix: str = "") -> Dict[str, Any]
     return results
 
 
-def render_nested_object(section_name: str, fields: Dict, field_prefix: str = "") -> Dict[str, Any]:
-    """Renderiza um objeto aninhado como uma seção expansível."""
-    with st.expander(f"{section_name}", expanded=False):
+def render_nested_object(
+    section_name: str,
+    fields: Dict,
+    field_prefix: str = "",
+    nesting_level: int = 0,
+) -> Dict[str, Any]:
+    """Renderiza um objeto aninhado evitando expanders dentro de expanders."""
+
+    def _render_object_fields() -> Dict[str, Any]:
         results = {}
         for field_name, field_config in fields.items():
             if isinstance(field_config, dict):
                 if field_config.get("type") == "object":
-                    # Objeto aninhado dentro de um objeto
                     nested_fields = field_config.get("fields", {})
                     full_key = f"{field_prefix}_{field_name}" if field_prefix else field_name
-                    results[field_name] = render_nested_object(field_name, nested_fields, full_key)
+                    results[field_name] = render_nested_object(
+                        field_name,
+                        nested_fields,
+                        full_key,
+                        nesting_level=nesting_level + 1,
+                    )
                 elif "type" in field_config and field_config["type"] not in ["object", "array"]:
                     field_type = field_config.get("type", "text")
                     label = field_config.get("label", field_name)
                     required = field_config.get("required", False)
                     full_key = f"{field_prefix}_{field_name}" if field_prefix else field_name
-                    
+
                     value = render_field(label, full_key, field_type, required)
-                    
-                    # Conversão de tipos
+
                     if field_type == "date" and value:
                         value = value.isoformat()
                     elif field_type == "number":
                         if value == 0 and not st.session_state.get(full_key, None):
                             value = None
-                    
+
                     results[field_name] = value
-        
+
         return results
+
+    if nesting_level == 0:
+        with st.expander(f"{section_name}", expanded=False):
+            return _render_object_fields()
+
+    st.markdown(f"**{section_name}**")
+    with st.container():
+        return _render_object_fields()
 
 
 def render_array_section(section_name: str, fields: Dict, field_prefix: str = "") -> List[Dict[str, Any]]:
@@ -167,7 +184,12 @@ def render_array_section(section_name: str, fields: Dict, field_prefix: str = ""
                     
                     if field_type == "object":
                         nested_fields = field_config.get("fields", {})
-                        item_data[field_name] = render_nested_object(field_name, nested_fields, f"{array_key}_{idx}")
+                        item_data[field_name] = render_nested_object(
+                            field_name,
+                            nested_fields,
+                            f"{array_key}_{idx}",
+                            nesting_level=1,
+                        )
                     else:
                         label = field_config.get("label", field_name)
                         required = field_config.get("required", False)
