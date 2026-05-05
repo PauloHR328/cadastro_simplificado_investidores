@@ -31,6 +31,16 @@ def is_date_variable(variable_name: str) -> bool:
     return "data" in normalized_name
 
 
+def detect_template_kind(template_name: str) -> str:
+    """Determina o tipo do template a partir da extensão do arquivo."""
+    suffix = Path(template_name).suffix.lower()
+    if suffix == ".docx":
+        return "word"
+    if suffix == ".pdf":
+        return "pdf"
+    raise ValueError(f"Formato de template não suportado: {suffix or template_name}")
+
+
 def format_variable_label(variable_name: str) -> str:
     """Converte o nome da variável em um rótulo amigável para a interface."""
     label = re.sub(r"[_-]+", " ", variable_name).strip()
@@ -86,6 +96,28 @@ def extract_template_variables(template_bytes: bytes) -> list[str]:
                 found_variables.append(variable)
 
     return found_variables
+
+
+def extract_pdf_form_fields(template_bytes: bytes) -> list[str]:
+    """Extrai os nomes dos campos de um PDF editável."""
+    from pypdf import PdfReader
+
+    reader = PdfReader(BytesIO(template_bytes))
+    fields = reader.get_fields()
+    if not fields:
+        return []
+
+    return [field_name.strip() for field_name in fields.keys() if field_name and field_name.strip()]
+
+
+def extract_template_fields(template_bytes: bytes, template_name: str) -> list[str]:
+    """Extrai os campos do template de acordo com o tipo do arquivo."""
+    template_kind = detect_template_kind(template_name)
+    if template_kind == "word":
+        return extract_template_variables(template_bytes)
+    if template_kind == "pdf":
+        return extract_pdf_form_fields(template_bytes)
+    raise ValueError(f"Tipo de template não suportado: {template_kind}")
 
 
 def _format_value(value: Any) -> str:
@@ -156,9 +188,10 @@ def build_document_filename(
 ) -> str:
     """Monta um nome de arquivo amigável e determinístico para cada documento."""
     template_stem = sanitize_filename(Path(template_name).stem)
+    template_suffix = Path(template_name).suffix.lower() or ".docx"
     record_identifier = _pick_record_identifier(record)
     suffix = sanitize_filename(record_identifier) if record_identifier else f"registro_{record_index:03d}"
-    return f"{template_stem}_{suffix}.docx"
+    return f"{template_stem}_{suffix}{template_suffix}"
 
 
 def build_download_zip_name(template_name: str) -> str:
@@ -191,6 +224,25 @@ def render_document(template_bytes: bytes, context: dict[str, str]) -> bytes:
             os.remove(temp_input_path)
 
 
+def render_pdf_document(template_bytes: bytes, context: dict[str, str]) -> bytes:
+    """Preenche um PDF editável com base no contexto recebido."""
+    from pypdf import PdfReader, PdfWriter
+
+    reader = PdfReader(BytesIO(template_bytes))
+    writer = PdfWriter()
+    writer.append(reader)
+    writer.update_page_form_field_values(
+        None,
+        context,
+        auto_regenerate=False,
+    )
+
+    output_buffer = BytesIO()
+    writer.write(output_buffer)
+    output_buffer.seek(0)
+    return output_buffer.getvalue()
+
+
 def generate_documents_zip(
     template_bytes: bytes,
     template_name: str,
@@ -198,6 +250,7 @@ def generate_documents_zip(
     records: list[dict[str, Any]],
 ) -> tuple[bytes, list[str]]:
     """Gera todos os documentos preenchidos e os compacta em um único zip."""
+    template_kind = detect_template_kind(template_name)
     zip_buffer = BytesIO()
     generated_files: list[str] = []
     filename_usage: dict[str, int] = {}
@@ -205,7 +258,13 @@ def generate_documents_zip(
     with ZipFile(zip_buffer, mode="w", compression=ZIP_DEFLATED) as zip_file:
         for index, record in enumerate(records, start=1):
             normalized_record = normalize_record(record, variables)
-            document_bytes = render_document(template_bytes, normalized_record)
+            if template_kind == "word":
+                document_bytes = render_document(template_bytes, normalized_record)
+            elif template_kind == "pdf":
+                document_bytes = render_pdf_document(template_bytes, normalized_record)
+            else:
+                raise ValueError(f"Tipo de template não suportado: {template_kind}")
+
             base_filename = build_document_filename(
                 template_name=template_name,
                 record=normalized_record,

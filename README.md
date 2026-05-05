@@ -4,6 +4,7 @@ Uma aplicação Streamlit com dois fluxos isolados em abas:
 
 - Cadastro dinâmico de investidores (Pessoa Física, Pessoa Jurídica e Fundos) com geração automática de JSON válido
 - Geração em lote de documentos Word a partir de templates `.docx` com variáveis `{{ variavel }}`
+- Geração em lote de PDFs editáveis a partir de templates `.pdf` com campos de formulário
 
 ## 🎯 Objetivo
 
@@ -23,6 +24,7 @@ Substituir um fluxo baseado em Excel por uma aplicação executável flexível, 
 ✅ **Templates Word Dinâmicos**: Upload de `.docx`, extração automática de variáveis e formulário dinâmico  
 ✅ **Lote Manual de Documentos**: Adição e remoção de múltiplos registros sem uso de Excel  
 ✅ **Download Consolidado**: Geração de múltiplos `.docx` em um único `.zip`  
+✅ **PDFs Editáveis**: Leitura de campos de formulário e preenchimento automático em lote  
 
 ## 📋 Tipos de Cadastro
 
@@ -84,11 +86,16 @@ A aplicação será aberta automaticamente no seu navegador em `http://localhost
 
 #### Aba 2: Documentos Word em Lote
 
-1. **Escolher origem do template**: Selecione um arquivo já salvo em `templates/` ou envie um `.docx`
+1. **Escolher origem do template**: Selecione um arquivo já salvo em `templates/` ou envie um `.docx` / `.pdf`
 2. **Revisar variáveis**: Confira a lista de campos detectados automaticamente
 3. **Adicionar registros**: Preencha o formulário dinâmico e clique em "Adicionar registro"
 4. **Gerar documentos**: Clique em "Gerar documentos" para montar todos os arquivos
 5. **Baixar o lote**: Faça o download do `.zip` com todos os documentos gerados
+
+Observação:
+
+- Para `.docx`, o template deve usar placeholders `{{ variavel }}`
+- Para `.pdf`, o arquivo precisa ser editável e conter campos de formulário
 
 ### 4. Exemplo de uso do fluxo Word
 
@@ -153,9 +160,12 @@ cadastro_investidores/
 
 ### `word_template_utils.py`
 - `extract_template_variables()`: Lê o `.docx` e encontra placeholders únicos
-- `normalize_record()`: Garante preenchimento padrão para campos vazios
+- `extract_pdf_form_fields()`: Lê os campos de um PDF editável
+- `extract_template_fields()`: Escolhe a estratégia correta para `.docx` ou `.pdf`
+- `normalize_record()`: Normaliza os valores informados antes da geração
 - `render_document()`: Preenche um template Word com os dados do registro
-- `generate_documents_zip()`: Gera múltiplos `.docx` e compacta tudo em `.zip`
+- `render_pdf_document()`: Preenche um PDF editável com os dados do registro
+- `generate_documents_zip()`: Gera múltiplos `.docx` ou `.pdf` e compacta tudo em `.zip`
 
 ## 📊 Regras de Negócio Implementadas
 
@@ -185,6 +195,7 @@ cadastro_investidores/
 - **Métricas**: Tipo, TipoImportacao, Registros
 - **Feedback Visual**: Caixas de sucesso/erro
 - **Formulário dinâmico Word**: Inputs gerados a partir das variáveis do template
+- **Formulário dinâmico PDF**: Inputs gerados a partir dos campos do formulário editável
 - **Lista de registros**: Remoção individual e geração em lote
 
 ## 🔐 Validação
@@ -259,6 +270,7 @@ Use o botão "➕ Adicionar Contas Bancárias" para criar múltiplas contas:
 - **pydantic**: ^2.0.0 - Validação de dados
 - **docxtpl**: Preenchimento de templates `.docx`
 - **python-docx**: Leitura de conteúdo e estrutura de documentos Word
+- **pypdf**: Leitura e preenchimento de formulários PDF editáveis
 
 ## 🛠️ Desenvolvimento
 

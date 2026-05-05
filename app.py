@@ -17,7 +17,8 @@ from utils import (
 )
 from word_template_utils import (
     build_download_zip_name,
-    extract_template_variables,
+    detect_template_kind,
+    extract_template_fields,
     format_variable_label,
     generate_documents_zip,
     is_date_variable,
@@ -277,12 +278,12 @@ def render_investor_registration_tab() -> None:
 
 
 def render_word_documents_tab() -> None:
-    """Renderiza o novo fluxo de geração de documentos Word em lote."""
-    st.markdown("## Geração de Documentos Word")
+    """Renderiza o fluxo de geração de documentos em lote."""
+    st.markdown("## Geração de Documentos Word e PDF")
     st.markdown(
-        "Selecione um template salvo em `templates/` ou envie um `.docx` com variáveis "
-        "no formato `{{ variavel }}`. Depois, adicione registros manualmente e gere "
-        "todos os documentos em um único `.zip`."
+        "Selecione um template salvo em `templates/` ou envie um `.docx` ou `.pdf` editável. "
+        "Para Word, o template deve usar variáveis no formato `{{ variavel }}`. "
+        "Para PDF, os campos serão lidos diretamente do formulário editável."
     )
 
     template_mode = st.radio(
@@ -296,10 +297,15 @@ def render_word_documents_tab() -> None:
     template_bytes = None
 
     if template_mode == "Selecionar template salvo":
-        saved_templates = sorted(TEMPLATES_DIR.glob("*.docx"))
+        saved_templates = sorted(
+            [
+                *TEMPLATES_DIR.glob("*.docx"),
+                *TEMPLATES_DIR.glob("*.pdf"),
+            ]
+        )
         if not saved_templates:
             st.warning(
-                "Nenhum template `.docx` foi encontrado na pasta `templates/`. "
+                "Nenhum template `.docx` ou `.pdf` foi encontrado na pasta `templates/`. "
                 "Adicione arquivos lá ou use o modo de upload."
             )
             return
@@ -322,15 +328,15 @@ def render_word_documents_tab() -> None:
             return
     else:
         uploaded_template = st.file_uploader(
-            "Upload do template Word",
-            type=["docx"],
-            help="O template deve conter placeholders no formato {{ variavel }}.",
+            "Upload do template",
+            type=["docx", "pdf"],
+            help="Envie um `.docx` com placeholders ou um `.pdf` editável com campos de formulário.",
             key="word_template_uploader",
         )
 
         if not uploaded_template:
             st.info(
-                "Faça upload de um template `.docx` para extrair as variáveis e montar os registros."
+                "Faça upload de um template `.docx` ou `.pdf` editável para montar os registros."
             )
             return
 
@@ -351,18 +357,24 @@ def render_word_documents_tab() -> None:
         reset_word_generation_state()
 
     try:
-        variables = extract_template_variables(template_bytes)
+        template_kind = detect_template_kind(template_name)
+        variables = extract_template_fields(template_bytes, template_name)
     except Exception as exc:
         st.error(
             "Não foi possível processar o template enviado. "
-            f"Verifique se o arquivo é um `.docx` válido. Detalhes: {exc}"
+            f"Verifique se o arquivo é um `.docx` válido ou um `.pdf` editável. Detalhes: {exc}"
         )
         return
 
     if not variables:
-        st.warning(
-            "Nenhuma variável foi encontrada no template. Use placeholders no formato `{{ variavel }}`."
-        )
+        if template_kind == "word":
+            st.warning(
+                "Nenhuma variável foi encontrada no template. Use placeholders no formato `{{ variavel }}`."
+            )
+        else:
+            st.warning(
+                "Nenhum campo editável foi encontrado no PDF. Este fluxo funciona apenas com PDFs que tenham formulário."
+            )
         return
 
     st.session_state.word_variables = variables
@@ -381,12 +393,15 @@ def render_word_documents_tab() -> None:
     with col1:
         st.metric("Template carregado", Path(template_name).name)
     with col2:
-        st.metric("Variáveis detectadas", len(variables))
+        st.metric("Campos detectados", len(variables))
     with col3:
         st.metric("Registros adicionados", len(st.session_state.word_records))
 
-    st.markdown("### Variáveis detectadas")
-    st.caption("Você pode ajustar o tipo de cada variável antes de preencher os registros.")
+    st.markdown("### Campos detectados")
+    if template_kind == "word":
+        st.caption("Você pode ajustar o tipo de cada variável antes de preencher os registros.")
+    else:
+        st.caption("Os campos foram lidos do formulário do PDF. Você pode ajustar o tipo para facilitar o preenchimento.")
     for variable in variables:
         col_label, col_type = st.columns([2, 1])
         with col_label:
